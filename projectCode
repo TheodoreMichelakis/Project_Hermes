@@ -1,0 +1,89 @@
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include <LiquidCrystal.h>
+
+// Data wire is plugged into port 7 on the Arduino
+#define ONE_WIRE_BUS 7
+
+// Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
+OneWire oneWire(ONE_WIRE_BUS);
+
+// Pass our oneWire reference to Dallas Temperature. 
+DallasTemperature sensors(&oneWire);
+
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+
+int flag = 0; //We keep track of the temp every 10 seconds. 
+const int globTemp = 20; //Suggested inside Temprature at Winter in degrees Celsius
+
+void setup() {
+   // set up the LCD's number of columns and rows: 
+ lcd.begin(16, 2);
+ pinMode(8, OUTPUT); //blue led
+ pinMode(9, OUTPUT); //red led
+ pinMode(10, OUTPUT); //green led
+   // Start up the library
+  sensors.begin();
+  
+}
+
+void loop() {
+  sensors.requestTemperatures(); // Send the command to get temperatures
+  lcd.print("Temprature: ");
+  lcd.print(sensors.getTempCByIndex(0));
+  lcd.setCursor(0, 0);
+  delay(1000);
+  if(flag < 10)
+  {
+    flag = flag + 1;
+  }
+  else
+  {
+    if(sensors.getTempCByIndex(0) > (globTemp + 1) )
+    {
+      digitalWrite(9, HIGH);
+      lcd.setCursor(0,0);
+      lcd.print("You are above   ");
+      lcd.setCursor(0,1);
+      lcd.print("Suggested Temp:(");
+      delay(2000);
+      lcd.setCursor(0,1);
+      lcd.print("                ");
+      digitalWrite(9, LOW);
+      lcd.setCursor(0,0);
+      lcd.print("Temprature: ");
+      lcd.print(sensors.getTempCByIndex(0));
+    }
+    else if(sensors.getTempCByIndex(0) < (globTemp - 2) )
+    {
+      digitalWrite(8, HIGH);
+      lcd.setCursor(0,0);
+      lcd.print("You are below   ");
+      lcd.setCursor(0,1);
+      lcd.print("Suggested Temp:)");
+      delay(2000);
+      lcd.setCursor(0,1);
+      lcd.print("                ");
+      digitalWrite(8, LOW);
+      lcd.setCursor(0,0);
+      lcd.print("Temprature: ");
+      lcd.print(sensors.getTempCByIndex(0));
+    }
+    else
+    {
+      digitalWrite(10, HIGH);
+      lcd.setCursor(0,0);
+      lcd.print("You are doing   ");
+      lcd.setCursor(0,1);
+      lcd.print("GREAT! :D");
+      delay(2000);
+      lcd.setCursor(0,1);
+      lcd.print("                ");
+      digitalWrite(10, LOW);
+      lcd.setCursor(0,0);
+      lcd.print("Temprature: ");
+      lcd.print(sensors.getTempCByIndex(0));
+    }
+    flag = 0;
+  }
+}
